@@ -6,13 +6,18 @@ const spawn = require('child_process').spawn;
 
 app.post('/', upload.single('file'), function (req, res, next) {
   res.set("Content-Disposition", `attachment; filename=${req.file.originalname}.pdf`)
-  let child = spawn('cat')
+  let child = spawn('unoconv', ["-f", "pdf", "--stdin", "--stdout"])
   child.stdin.write(req.file.buffer)
   child.stdin.end()
+  child.stderr.on('data', (data) => {
+    console.log(String(data))
+  });
+
   child.stdout.on('data', (data) => {
     res.write(data)
   });
   child.on('close', (code) => {
+    console.log(1)
     res.end()
   });
 })
